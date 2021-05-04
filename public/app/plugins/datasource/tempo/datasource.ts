@@ -36,13 +36,12 @@ export class TempoDatasource extends DataSourceWithBackend<TempoQuery, TraceToLo
 
   query(options: DataQueryRequest<TempoQuery>): Observable<DataQueryResponse> {
     // If there is a linked query, run that instead. This is used to provide a list of traces.
-    console.log('querying from datasource', options);
     if (options.targets.some((t) => t.linkedQuery) && this.linkedDatasource) {
-      // Wrap linked query into a data request
+      // Wrap linked query into a data request based on original request
       const linkedQuery = options.targets.find((t) => t.linkedQuery)?.linkedQuery;
       const linkedRequest: DataQueryRequest = { ...options, targets: [linkedQuery!] };
       return (this.linkedDatasource.query(linkedRequest) as Observable<DataQueryResponse>).pipe(
-        map((response) => transformTraceList(response, this.linkedDatasource))
+        map((response) => (response.error ? response : transformTraceList(response, this.uid, this.name)))
       );
     }
 

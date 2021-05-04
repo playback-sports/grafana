@@ -1,12 +1,4 @@
-import {
-  DataQueryResponse,
-  ArrayVector,
-  DataFrame,
-  Field,
-  FieldType,
-  MutableDataFrame,
-  DataSourceApi,
-} from '@grafana/data';
+import { DataQueryResponse, ArrayVector, DataFrame, Field, FieldType, MutableDataFrame } from '@grafana/data';
 
 const emptyDataQueryResponse = {
   data: [
@@ -30,6 +22,10 @@ export function createTableFrame(logsFrame: DataFrame, datasourceUid: string, da
   const tableFrame = new MutableDataFrame({
     fields: [
       {
+        name: 'Time',
+        type: FieldType.time,
+      },
+      {
         name: 'traceID',
         type: FieldType.string,
         config: {
@@ -49,31 +45,51 @@ export function createTableFrame(logsFrame: DataFrame, datasourceUid: string, da
           ],
         },
       },
+      {
+        name: 'Message',
+        type: FieldType.string,
+      },
     ],
     meta: {
       preferredVisualisationType: 'table',
     },
   });
 
+  if (!logsFrame) {
+    return tableFrame;
+  }
+
+  const timeField = logsFrame.fields.find((f) => f.type === FieldType.time);
+
+  // Going through all string fields to look for trace IDs
   logsFrame.fields.forEach((field) => {
     if (field.type === FieldType.string) {
-      field.values.toArray().forEach((value) => {
-        if (value) {
-          const match = (value as string).match(traceRegex);
+      const values = field.values.toArray();
+      for (let i = 0; i < values.length; i++) {
+        const line = values[i];
+        if (line) {
+          const match = (line as string).match(traceRegex);
           if (match) {
             const traceId = match[1];
-            tableFrame.fields[0].values.add(traceId);
+            const time = timeField ? timeField.values.get(i) : null;
+            tableFrame.fields[0].values.add(time);
+            tableFrame.fields[1].values.add(traceId);
+            tableFrame.fields[2].values.add(line);
           }
         }
-      });
+      }
     }
   });
 
   return tableFrame;
 }
 
-export function transformTraceList(response: DataQueryResponse, datasource: DataSourceApi): DataQueryResponse {
-  const frame = createTableFrame(response.data[0], datasource.uid, datasource.name);
+export function transformTraceList(
+  response: DataQueryResponse,
+  datasourceId: string,
+  datasourceName: string
+): DataQueryResponse {
+  const frame = createTableFrame(response.data[0], datasourceId, datasourceName);
   response.data[0] = frame;
   return response;
 }
