@@ -1,12 +1,12 @@
 // We use `import type` to guarentee it'll be erased from the JS and it doesnt accidently bundle monaco
 import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
 
-export type CodeEditorChangeHandler = (value: string) => void;
-export type CodeEditorSuggestionProvider = () => CodeEditorSuggestionItem[];
-
 export type Monaco = typeof monacoType;
 export type MonacoEditor = monacoType.editor.IStandaloneCodeEditor;
 export type MonacoOptions = monacoType.editor.IStandaloneEditorConstructionOptions;
+
+export type CodeEditorChangeHandler = (value: string) => void;
+export type CodeEditorSuggestionProvider = () => CodeEditorSuggestionItem[];
 
 export interface CodeEditorProps {
   value: string;
