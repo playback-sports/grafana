@@ -94,6 +94,7 @@ func createTestEvalContext(cmd *NotificationTestCommand) *EvalContext {
 	ctx.Firing = true
 	ctx.Error = fmt.Errorf("this is only a test")
 	ctx.EvalMatches = evalMatchesBasedOnState()
+	ctx.EvalNotMatches = evalNotMatchesBasedOnState()
 
 	return ctx
 }
@@ -108,6 +109,21 @@ func evalMatchesBasedOnState() []*EvalMatch {
 	matches = append(matches, &EvalMatch{
 		Metric: "Higher Value",
 		Value:  null.FloatFrom(200),
+	})
+
+	return matches
+}
+
+func evalNotMatchesBasedOnState() []*EvalNotMatch {
+	matches := make([]*EvalNotMatch, 0)
+	matches = append(matches, &EvalNotMatch{
+		Metric: "Low Value",
+		Value:  null.FloatFrom(50),
+	})
+
+	matches = append(matches, &EvalNotMatch{
+		Metric: "Lower Value",
+		Value:  null.FloatFrom(25),
 	})
 
 	return matches

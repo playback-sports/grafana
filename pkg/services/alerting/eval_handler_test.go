@@ -11,14 +11,15 @@ import (
 )
 
 type conditionStub struct {
-	firing   bool
-	operator string
-	matches  []*EvalMatch
-	noData   bool
+	firing     bool
+	operator   string
+	matches    []*EvalMatch
+	notMatches []*EvalNotMatch
+	noData     bool
 }
 
 func (c *conditionStub) Eval(context *EvalContext, reqHandler plugins.DataRequestHandler) (*ConditionResult, error) {
-	return &ConditionResult{Firing: c.firing, EvalMatches: c.matches, Operator: c.operator, NoDataFound: c.noData}, nil
+	return &ConditionResult{Firing: c.firing, EvalMatches: c.matches, EvalNotMatches: c.notMatches, Operator: c.operator, NoDataFound: c.noData}, nil
 }
 
 func TestAlertingEvaluationHandler(t *testing.T) {
