@@ -1,11 +1,11 @@
 import { DataQuery, DataSourceApi, ExploreQueryFieldProps } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { getDataSourceSrv } from '@grafana/runtime';
-import { LegacyForms } from '@grafana/ui';
+import { InlineField, InlineFieldRow, InlineLabel, LegacyForms, RadioButtonGroup } from '@grafana/ui';
 import { TraceToLogsOptions } from 'app/core/components/TraceToLogsSettings';
 import React from 'react';
 import { LokiQueryField } from '../loki/components/LokiQueryField';
-import { TempoDatasource, TempoQuery } from './datasource';
+import { TempoDatasource, TempoQuery, TempoQueryType } from './datasource';
 
 type Props = ExploreQueryFieldProps<TempoDatasource, TempoQuery>;
 
@@ -61,36 +61,66 @@ export class TempoQueryField extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <LegacyForms.FormField
-          label="Trace ID"
-          labelWidth={4}
-          inputEl={
-            <div className="slate-query-field__wrapper">
-              <div className="slate-query-field" aria-label={selectors.components.QueryField.container}>
-                <input
-                  style={{ width: '100%' }}
-                  value={query.query || ''}
-                  onChange={(e) =>
-                    onChange({
-                      ...query,
-                      query: e.currentTarget.value,
-                    })
-                  }
-                />
+        <InlineFieldRow>
+          <InlineField label="Query type">
+            <RadioButtonGroup<TempoQueryType>
+              options={[
+                { value: 'search', label: 'Search' },
+                { value: undefined, label: 'TraceID' },
+              ]}
+              value={query.queryType}
+              onChange={(v) =>
+                onChange({
+                  ...query,
+                  queryType: v,
+                })
+              }
+              size="md"
+            />
+          </InlineField>
+        </InlineFieldRow>
+        {query.queryType === 'search' && linkedDatasource && (
+          <>
+            <InlineLabel>
+              Tempo uses {((linkedDatasource as unknown) as DataSourceApi).name} to find traces.
+            </InlineLabel>
+
+            <LokiQueryField
+              datasource={linkedDatasource!}
+              onChange={this.onChangeLinkedQuery}
+              onRunQuery={this.onRunLinkedQuery}
+              query={this.linkedQuery as any}
+              history={[]}
+              absoluteRange={absoluteTimeRange}
+            />
+          </>
+        )}
+        {query.queryType === 'search' && !linkedDatasource && (
+          <div>Please set up a Traces-to-logs datasource in the datasource settings.</div>
+        )}
+        {query.queryType !== 'search' && (
+          <LegacyForms.FormField
+            label="Trace ID"
+            labelWidth={4}
+            inputEl={
+              <div className="slate-query-field__wrapper">
+                <div className="slate-query-field" aria-label={selectors.components.QueryField.container}>
+                  <input
+                    style={{ width: '100%' }}
+                    value={query.query || ''}
+                    onChange={(e) =>
+                      onChange({
+                        ...query,
+                        query: e.currentTarget.value,
+                        linkedQuery: undefined,
+                      })
+                    }
+                  />
+                </div>
               </div>
-            </div>
-          }
-        />
-        {linkedDatasource ? (
-          <LokiQueryField
-            datasource={linkedDatasource!}
-            onChange={this.onChangeLinkedQuery}
-            onRunQuery={this.onRunLinkedQuery}
-            query={this.linkedQuery as any}
-            history={[]}
-            absoluteRange={absoluteTimeRange}
+            }
           />
-        ) : null}
+        )}
       </>
     );
   }

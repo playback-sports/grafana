@@ -12,10 +12,13 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { transformTrace, transformTraceList } from './resultTransformer';
 
+export type TempoQueryType = 'search' | undefined;
+
 export type TempoQuery = {
   query: string;
   // Query to find list of traces, e.g., via Loki
   linkedQuery?: DataQuery;
+  queryType: TempoQueryType;
 } & DataQuery;
 
 export class TempoDatasource extends DataSourceWithBackend<TempoQuery, TraceToLogsData> {
