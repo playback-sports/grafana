@@ -73,6 +73,14 @@ func (rs *SchemaLoaderService) DashboardApplyDefaults(input *simplejson.Json) (*
 	return output, nil
 }
 
+func (rs *SchemaLoaderService) GetDashboardSchema() (*simplejson.Json, error) {
+	dsSchema := schema.Find(rs.DashFamily, schema.Latest())
+	inst, path := dsSchema.CUE().Reference()
+	fmt.Println("path is: ", path)
+	schema.ConvertCueToJsonSchema(inst)
+	return nil, nil
+}
+
 func (rs *SchemaLoaderService) DashboardTrimDefaults(input simplejson.Json) (simplejson.Json, error) {
 	val, _ := input.Map()
 	val = removeNils(val)
@@ -82,7 +90,6 @@ func (rs *SchemaLoaderService) DashboardTrimDefaults(input simplejson.Json) (sim
 	if err != nil {
 		return input, err
 	}
-	// spew.Dump(dsSchema)
 	result, err := dsSchema.TrimDefaults(schema.Resource{Value: data})
 	if err != nil {
 		return input, err

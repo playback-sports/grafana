@@ -6,6 +6,8 @@ import (
 	"math/bits"
 
 	"cuelang.org/go/cue"
+	"cuelang.org/go/cue/ast"
+	"cuelang.org/go/encoding/openapi"
 )
 
 // CueSchema represents a single, complete CUE-based schema that can perform
@@ -123,6 +125,19 @@ func AsArray(sch VersionedCueSchema) [][]VersionedCueSchema {
 	}
 
 	return ret
+}
+
+func ConvertCueToJsonSchema(input *cue.Instance) (string, error) {
+	info := *(*openapi.OrderedMap)(ast.NewStruct(
+		"title", ast.NewString("cueschema"),
+		"version", ast.NewString("v0"),
+	))
+	resolveRefs := &openapi.Config{Info: info, ExpandReferences: true}
+	b, err := openapi.Gen(input, resolveRefs)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 // Find traverses the chain of VersionedCueSchema until the criteria in the

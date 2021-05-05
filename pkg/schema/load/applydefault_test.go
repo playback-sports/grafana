@@ -14,8 +14,6 @@ import (
 	"golang.org/x/tools/txtar"
 )
 
-var CasesDir = filepath.Join("testdata", "artifacts", "dashboards", "trimdefault")
-
 type Case struct {
 	Name string
 
@@ -25,6 +23,7 @@ type Case struct {
 }
 
 func TestGenerate(t *testing.T) {
+	var CasesDir = filepath.Join("testdata", "artifacts", "dashboards", "trimdefault")
 	cases, err := loadCases(CasesDir)
 	if err != nil {
 		t.Fatal(err)
@@ -77,7 +76,6 @@ func loadCases(dir string) ([]Case, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	var cases []Case
 
 	for _, fi := range files {

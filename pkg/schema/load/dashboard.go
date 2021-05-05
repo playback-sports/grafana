@@ -6,6 +6,7 @@ import (
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/load"
+	"github.com/grafana/grafana/pkg/components/simplejson"
 	"github.com/grafana/grafana/pkg/schema"
 )
 
@@ -140,6 +141,10 @@ func (cds *compositeDashboardSchema) ApplyDefaults(_ schema.Resource) (schema.Re
 // in the  where the values at those paths are the same as the default value
 // given in the schema.
 func (cds *compositeDashboardSchema) TrimDefaults(_ schema.Resource) (schema.Resource, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (cds *compositeDashboardSchema) JsonSchema() (*simplejson.Json, error) {
 	panic("not implemented") // TODO: Implement
 }
 

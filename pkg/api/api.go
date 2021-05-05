@@ -315,6 +315,11 @@ func (hs *HTTPServer) registerRoutes() {
 			})
 		})
 
+		// Schema
+		apiRoute.Group("/schema", func(schemaRoute routing.RouteRegister) {
+			schemaRoute.Get("/dashboard", routing.Wrap(hs.GetDashboardSchema))
+		})
+
 		// Dashboard
 		apiRoute.Group("/dashboards", func(dashboardRoute routing.RouteRegister) {
 			dashboardRoute.Get("/uid/:uid", routing.Wrap(hs.GetDashboard))
