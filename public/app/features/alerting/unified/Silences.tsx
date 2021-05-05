@@ -1,4 +1,4 @@
-import { Field, Alert, LoadingPlaceholder } from '@grafana/ui';
+import { Alert, LoadingPlaceholder } from '@grafana/ui';
 import React, { FC, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Redirect } from 'react-router-dom';
@@ -12,17 +12,20 @@ import { initialAsyncRequestState } from './utils/redux';
 import SilencesTable from './components/silences/SilencesTable';
 
 const Silences: FC = () => {
-  const [alertManagerSourceName = '', setAlertManagerSourceName] = useAlertManagerSourceName();
+  const [alertManagerSourceName, setAlertManagerSourceName] = useAlertManagerSourceName();
   const dispatch = useDispatch();
   const silences = useUnifiedAlertingSelector((state) => state.silences);
-
-  const alerts =
-    useUnifiedAlertingSelector((state) => state.amAlerts)[alertManagerSourceName] || initialAsyncRequestState;
+  const alertsRequests = useUnifiedAlertingSelector((state) => state.amAlerts);
+  const alertsRequest = alertManagerSourceName
+    ? alertsRequests[alertManagerSourceName] || initialAsyncRequestState
+    : undefined;
 
   useEffect(() => {
     function fetchAll() {
-      dispatch(fetchSilencesAction(alertManagerSourceName));
-      dispatch(fetchAmAlertsAction(alertManagerSourceName));
+      if (alertManagerSourceName) {
+        dispatch(fetchSilencesAction(alertManagerSourceName));
+        dispatch(fetchAmAlertsAction(alertManagerSourceName));
+      }
     }
     fetchAll();
     const interval = setInterval(() => fetchAll, SILENCES_POLL_INTERVAL_MS);
@@ -38,21 +41,17 @@ const Silences: FC = () => {
 
   return (
     <AlertingPageWrapper pageId="silences">
-      <Field label="Choose alert manager">
-        <AlertManagerPicker current={alertManagerSourceName} onChange={setAlertManagerSourceName} />
-      </Field>
-      <br />
-      <br />
+      <AlertManagerPicker current={alertManagerSourceName} onChange={setAlertManagerSourceName} />
       {error && !loading && (
         <Alert severity="error" title="Error loading silences">
           {error.message || 'Unknown error.'}
         </Alert>
       )}
       {loading && <LoadingPlaceholder text="loading silences..." />}
-      {result && !error && alerts.result && (
+      {result && !error && alertsRequest?.result && (
         <SilencesTable
           silences={result}
-          alertManagerAlerts={alerts.result}
+          alertManagerAlerts={alertsRequest?.result}
           alertManagerSourceName={alertManagerSourceName}
         />
       )}
